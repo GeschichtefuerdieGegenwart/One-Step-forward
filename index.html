@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Step Forward &ndash; Zufällige Rollenzuweisung</title>
+<style>
+  :root {
+    --dark: #1b2a4a;
+    --accent: #c0392b;
+    --accent2: #2e86c1;
+    --gold: #e6a817;
+    --grey: #4a4a4a;
+    --light: #f4f6f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at 50% 0%, #22345e 0%, #0f1830 65%, #070c1a 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  header {
+    text-align: center;
+    padding: 40px 6% 10px;
+  }
+  header h1 {
+    margin: 0 0 8px;
+    font-size: 2.1em;
+    background: linear-gradient(90deg, #ffd580, #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header p { color: #aab4cc; margin: 0; max-width: 560px; margin: 0 auto; }
+
+  main {
+    max-width: 640px;
+    width: 92%;
+    padding: 20px 0 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .intro-message {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    padding: 22px 26px;
+    margin: 20px 0 34px;
+    text-align: center;
+    font-size: 1.05em;
+    line-height: 1.6;
+  }
+  .intro-message b { color: #ffd580; }
+
+  .wheel-stage {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    margin-bottom: 28px;
+  }
+  .wheel-ring {
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    border: 6px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 70%);
+  }
+  .wheel-ring.spinning {
+    animation: spin 1.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(1080deg); }
+  }
+  .wheel-emoji {
+    font-size: 5em;
+    filter: drop-shadow(0 0 20px rgba(255,255,255,0.25));
+  }
+  .wheel-glow {
+    position: absolute;
+    top: -10px; left: -10px; right: -10px; bottom: -10px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #e6a817, #c0392b, #2e86c1, #27ae60, #e6a817);
+    opacity: 0.35;
+    filter: blur(18px);
+    z-index: -1;
+  }
+
+  button.action {
+    background: linear-gradient(135deg, #c0392b, #922019);
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 40px;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(192,57,43,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.3px;
+  }
+  button.action:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(192,57,43,0.5); }
+  button.action:active { transform: translateY(0); }
+  button.action:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  #resultCard {
+    display: none;
+    width: 100%;
+    margin-top: 34px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 30px 28px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+    animation: fadein 0.5s ease;
+  }
+  @keyframes fadein {
+    from { opacity:0; transform: translateY(12px); }
+    to { opacity:1; transform: translateY(0); }
+  }
+  #resultCard .role-emoji {
+    font-size: 3.4em;
+    margin-bottom: 6px;
+  }
+  #resultCard .role-title {
+    font-size: 1.35em;
+    font-weight: 800;
+    color: #ffd580;
+    margin-bottom: 14px;
+    line-height: 1.3;
+  }
+  #resultCard .role-info {
+    font-size: 0.98em;
+    color: #d5dbeb;
+    line-height: 1.55;
+    max-width: 480px;
+    margin: 0 auto 20px;
+  }
+
+  .dims-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    text-align: left;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 520px) { .dims-grid { grid-template-columns: 1fr; } }
+  .dim-box {
+    background: rgba(255,255,255,0.05);
+    border-left: 3px solid var(--accent2);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .dim-label {
+    font-size: 0.72em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #7fc4ff;
+    margin-bottom: 3px;
+    font-weight: 700;
+  }
+  .dim-value {
+    font-size: 0.9em;
+    color: #e4e8f5;
+    line-height: 1.4;
+  }
+
+  .secret-note {
+    font-size: 0.82em;
+    color: #ffb4a8;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding-top: 14px;
+    margin-top: 8px;
+  }
+
+  .message-box {
+    margin-top: 30px;
+    background: rgba(46,134,193,0.12);
+    border: 1px solid rgba(46,134,193,0.35);
+    border-radius: 16px;
+    padding: 20px 24px;
+    font-size: 0.95em;
+    line-height: 1.6;
+    text-align: center;
+    max-width: 560px;
+  }
+  .message-box b { color: #7fc4ff; }
+
+  footer { text-align: center; padding: 24px; color: #6c7794; font-size: 0.8em; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>One Step Forward</h1>
+  <p>Ein zufälliger Blick auf ein Leben, das nicht das eigene ist</p>
+</header>
+
+<main>
+
+  <div class="intro-message">
+    Niemand von uns hat sich seinen <b>Geburtsort</b>, seine <b>Familie</b>, den <b>Bildungsstand der Eltern</b> oder den <b>wirtschaftlichen Hintergrund</b> selbst ausgesucht. Diese Übung zeigt, wie unterschiedlich die Startbedingungen im Leben sein können &ndash; rein durch Zufall.
+  </div>
+
+  <div class="wheel-stage">
+    <div class="wheel-glow" id="glow"></div>
+    <div class="wheel-ring" id="wheelRing">
+      <span class="wheel-emoji" id="wheelEmoji">🎭</span>
+    </div>
+  </div>
+
+  <button class="action" id="drawBtn" onclick="drawRole()">Schicksal auslosen</button>
+
+  <div id="resultCard">
+    <div class="role-emoji" id="roleEmoji">🎭</div>
+    <div class="role-title" id="roleTitle">—</div>
+    <div class="role-info" id="roleInfo">—</div>
+    <div class="dims-grid" id="dimsGrid"></div>
+    <div class="secret-note">Behalte diese Rolle für dich &ndash; sie wird erst am Ende der Übung im Plenum aufgelöst.</div>
+  </div>
+
+  <div class="message-box">
+    Stell dir jetzt kurz vor, wie dein Alltag, deine Familie und dein Umfeld in dieser Rolle aussehen könnten. Du wirst gleich anhand vorgelesener Aussagen entscheiden, ob du im Raum einen Schritt vorwärts machst oder stehen bleibst.
+  </div>
+
+</main>
+
+<footer>Übung „One Step Forward" &middot; Digitale Zufallszuweisung &middot; Unterrichtseinheit Soziale Gerechtigkeit</footer>
+
+<script>
+const roles = [{"title": "Verbeamtete Lehrerin", "emoji": "👩‍🏫", "info": "Geboren in eine bürgerliche Familie in Süddeutschland. Sicherer Job, festes Gehalt, gute Absicherung im Alter.", "dims": {"Ökonomisch": "Mittelschicht, sicheres Einkommen", "Bildung Eltern": "Eltern mit Realschul-/Fachschulabschluss", "Herkunft": "In Deutschland geboren", "Wohnsituation": "Eigentumswohnung, stabiles Umfeld"}}, {"title": "Politiker mit einem Sitz im Bundestag", "emoji": "🏛️", "info": "Kommt aus einer Familie mit langer politischer Tradition. Gutes Netzwerk seit der Kindheit, Elternhaus akademisch geprägt.", "dims": {"Ökonomisch": "Gehobene Mittelschicht bis wohlhabend", "Bildung Eltern": "Beide Elternteile akademisch", "Herkunft": "In Deutschland geboren, alteingesessene Familie", "Wohnsituation": "Großes Haus, viel Wohnraum"}}, {"title": "Selbstständiger Zimmermann mit florierendem Betrieb", "emoji": "🔨", "info": "Familienbetrieb seit drei Generationen in einer Kleinstadt. Handwerk von klein auf gelernt, heute wirtschaftlich unabhängig.", "dims": {"Ökonomisch": "Wirtschaftlich unabhängig, guter Verdienst", "Bildung Eltern": "Handwerksmeister, keine akademische Bildung", "Herkunft": "In Deutschland geboren, ländliche Region", "Wohnsituation": "Eigenes Haus mit Werkstatt"}}, {"title": "Erfolgreicher Fußballspieler in der Bundesliga", "emoji": "⚽", "info": "Wurde als Kind von einem Talentscout entdeckt. Familie unterstützte finanziell die Vereinswechsel und das Training.", "dims": {"Ökonomisch": "Sehr hohes Einkommen, aber unsichere Karrieredauer", "Bildung Eltern": "Unterschiedlich, oft kein Studium", "Herkunft": "Vielfältig, teils Einwanderungsgeschichte", "Wohnsituation": "Großzügig, mehrere Wohnorte möglich"}}, {"title": "Tochter des Leiters einer großen Bank", "emoji": "🏦", "info": "Wuchs in einer Villa im Grünen auf, Privatschule, Auslandsaufenthalte, nie finanzielle Sorgen gekannt.", "dims": {"Ökonomisch": "Sehr wohlhabend", "Bildung Eltern": "Beide Elternteile mit Universitätsabschluss", "Herkunft": "In Deutschland geboren, großstädtisches Umfeld", "Wohnsituation": "Villa, Privatschule, Auslandsreisen"}}, {"title": "Studentin Betriebswirtschaft in Hamburg", "emoji": "🎓", "info": "Erste in ihrer Familie, die studiert. Eltern unterstützen sie, so gut sie können, jobbt aber nebenbei für Miete und Bücher.", "dims": {"Ökonomisch": "Knapp, auf Nebenjob angewiesen", "Bildung Eltern": "Kein Elternteil mit Studienabschluss (Bildungsaufsteigerin)", "Herkunft": "In Deutschland geboren, aus Arbeiterfamilie", "Wohnsituation": "WG-Zimmer, finanziell angespannt"}}, {"title": "Körperbehinderte 30-jährige Rollstuhlfahrerin", "emoji": "♿", "info": "Seit einem Autounfall mit 22 Jahren querschnittsgelähmt. Kämpft täglich mit Barrieren im Alltag und am Arbeitsmarkt.", "dims": {"Ökonomisch": "Eingeschränkt durch reduzierte Erwerbsmöglichkeiten", "Bildung Eltern": "Mittlerer Bildungsabschluss", "Herkunft": "In Deutschland geboren", "Besonderheit": "Körperliche Behinderung, Barrieren im Alltag"}}, {"title": "24-jähriger Flüchtling aus Afghanistan", "emoji": "🧳", "info": "Familie musste wegen des Krieges fliehen. Kam allein nach Deutschland, wartet seit Monaten auf die Anerkennung seines Asylantrags.", "dims": {"Ökonomisch": "Kein eigenes Einkommen, abhängig von staatlicher Unterstützung", "Bildung Eltern": "Unklar, Bildungsweg durch Krieg unterbrochen", "Herkunft": "Geflüchtet aus Afghanistan", "Rechtsstatus": "Ungeklärter Aufenthaltsstatus"}}, {"title": "Tochter chinesischer Einwanderer mit erfolgreichem Restaurant", "emoji": "🥢", "info": "Eltern kamen vor 20 Jahren nach Herrenberg und bauten sich ihr Geschäft mühsam selbst auf. Hilft nach der Schule oft im Restaurant mit.", "dims": {"Ökonomisch": "Solides Familienunternehmen, harte Arbeit", "Bildung Eltern": "Eltern ohne deutschen Bildungsabschluss, unternehmerisch aktiv", "Herkunft": "Migrationshintergrund China, in Deutschland aufgewachsen", "Wohnsituation": "Wohnung über dem Familienbetrieb"}}, {"title": "14-jährige Tochter aus schwierigen sozialen Verhältnissen", "emoji": "🏠", "info": "Mutter drogenabhängig, Vater sitzt im Gefängnis. Wohnt bei wechselnden Verwandten, wenig Stabilität im Alltag.", "dims": {"Ökonomisch": "Armutsgefährdet, instabile Versorgung", "Bildung Eltern": "Kein Schulabschluss bei den Eltern", "Herkunft": "In Deutschland geboren", "Besonderheit": "Instabile Familiensituation, häufige Wohnortwechsel"}}, {"title": "17-jähriger Syrer, allein nach Deutschland gekommen", "emoji": "🕊️", "info": "Familie im Krieg zurückgelassen oder verloren. Seit einem halben Jahr in Deutschland, lebt in einer Jugendwohngruppe, kämpft mit der Sprache.", "dims": {"Ökonomisch": "Keine eigenen finanziellen Mittel", "Bildung Eltern": "Unbekannt/unterbrochen durch Flucht", "Herkunft": "Geflüchtet aus Syrien, unbegleitet", "Rechtsstatus": "Minderjähriger unbegleiteter Flüchtling"}}, {"title": "Muslimisches Mädchen bei strenggläubigen Eltern", "emoji": "🧕", "info": "Eltern stammen aus einem arabischen Land, halten an traditionellen Werten fest. Bewegt sich zwischen Elternhaus und deutschem Schulalltag.", "dims": {"Ökonomisch": "Durchschnittlich, Vater alleiniger Verdiener", "Bildung Eltern": "Mittlerer Bildungsabschluss aus Heimatland", "Herkunft": "Migrationshintergrund, in Deutschland geboren", "Besonderheit": "Spannungsfeld zwischen Familientraditionen und Schulalltag"}}, {"title": "17-jähriger KFZ-Mechaniker-Lehrling", "emoji": "🔧", "info": "Vater ebenfalls Mechaniker, hat die Ausbildungsstelle über den familiären Kontakt bekommen. Solide, aber kein hohes Einkommen.", "dims": {"Ökonomisch": "Bescheidenes, aber stabiles Familieneinkommen", "Bildung Eltern": "Vater mit Berufsausbildung, kein Studium", "Herkunft": "In Deutschland geboren", "Wohnsituation": "Lebt noch bei den Eltern"}}, {"title": "Illegaler Einwanderer aus Nigeria", "emoji": "🚫", "info": "Ohne gültige Papiere nach Europa gekommen. Kein Zugang zu regulärer Arbeit, medizinischer Versorgung oder sozialer Absicherung.", "dims": {"Ökonomisch": "Extreme Armut, Schwarzarbeit", "Bildung Eltern": "Unbekannt", "Herkunft": "Migration aus Nigeria ohne legalen Status", "Rechtsstatus": "Kein Aufenthaltstitel, kein Zugang zu Sozialsystem"}}, {"title": "Alleinerziehende Mutter von 3 Kindern", "emoji": "👩‍👧‍👦", "info": "Vater der Kinder ausgezogen, kein Unterhalt. Jongliert zwischen Teilzeitjob, Kinderbetreuung und Haushalt, wenig Zeit für sich selbst.", "dims": {"Ökonomisch": "Knapp, abhängig von Teilzeiteinkommen und Unterstützung", "Bildung Eltern": "Mittlerer Schulabschluss", "Herkunft": "In Deutschland geboren", "Besonderheit": "Alleinige Verantwortung für drei Kinder"}}, {"title": "Arbeitslose 23-Jährige ohne Schulabschluss", "emoji": "📄", "info": "Schule wegen familiärer Probleme abgebrochen. Bewirbt sich seit Monaten erfolglos, Zukunftsperspektive unklar.", "dims": {"Ökonomisch": "Abhängig von Grundsicherung", "Bildung Eltern": "Kein Schulabschluss in der Familie", "Herkunft": "In Deutschland geboren", "Besonderheit": "Kein eigener Schulabschluss, unsichere Zukunft"}}, {"title": "32-jähriger wohnsitzloser und arbeitsloser Fliesenleger", "emoji": "🛏️", "info": "Nach einer Trennung die Wohnung verloren, dann den Job. Lebt seit einem Jahr auf der Straße oder in Notunterkünften.", "dims": {"Ökonomisch": "Mittellos, wohnungslos", "Bildung Eltern": "Berufsausbildung, kein Studium", "Herkunft": "In Deutschland geboren", "Wohnsituation": "Obdachlos, Notunterkünfte"}}, {"title": "18-jähriger marokkanischer Hilfsarbeiter mit Hauptschulabschluss", "emoji": "🧱", "info": "Als Kind mit den Eltern eingewandert. Arbeitet auf Baustellen, wenig Aufstiegschancen ohne weitere Qualifikation.", "dims": {"Ökonomisch": "Niedriges Einkommen, körperliche Arbeit", "Bildung Eltern": "Kein deutscher Bildungsabschluss", "Herkunft": "Migrationshintergrund Marokko, als Kind eingewandert", "Wohnsituation": "Mehrgenerationenhaushalt"}}, {"title": "70-jährige alleinstehende Rentnerin mit 600€ Rente", "emoji": "👵", "info": "Arbeitete lange in Teilzeit als Verkäuferin, um Kinder zu betreuen. Reicht heute kaum für Miete und Lebenshaltung.", "dims": {"Ökonomisch": "Altersarmut, sehr geringe Rente", "Bildung Eltern": "Einfacher Schulabschluss (eigene Generation)", "Herkunft": "In Deutschland geboren", "Besonderheit": "Lebenslange Teilzeitarbeit wegen Kindererziehung"}}, {"title": "18-jähriger Punker", "emoji": "🎸", "info": "Bewusst aus bürgerlichen Strukturen ausgestiegen. Lebt in einer WG, jobbt gelegentlich, Elternhaus unterstützt ihn nicht mehr.", "dims": {"Ökonomisch": "Selbstgewählt einfaches Leben, unregelmäßiges Einkommen", "Bildung Eltern": "Bürgerliches Elternhaus, mittlere Bildung", "Herkunft": "In Deutschland geboren", "Besonderheit": "Bewusster Ausstieg aus dem Elternhaus"}}, {"title": "Kind, das in einer Hartz-IV-Familie aufwächst", "emoji": "🧸", "info": "Eltern schon länger ohne Arbeit. Wenig Geld für Ausflüge, Kleidung oder Hobbys, Klassenkameraden merken den Unterschied.", "dims": {"Ökonomisch": "Armutsgefährdet, staatliche Grundsicherung", "Bildung Eltern": "Kein Berufsabschluss der Eltern", "Herkunft": "In Deutschland geboren", "Besonderheit": "Wenig Teilhabe an Freizeitaktivitäten"}}, {"title": "Kind mit Lernschwierigkeiten an der Förderschule", "emoji": "📚", "info": "Wurde früh als 'anders' eingestuft. Eltern kämpfen um Unterstützung, Zukunftsaussichten auf dem Arbeitsmarkt unsicher.", "dims": {"Ökonomisch": "Durchschnittlich, aber unsichere Zukunftsperspektive", "Bildung Eltern": "Unterschiedlich", "Herkunft": "In Deutschland geboren", "Besonderheit": "Besonderer Förderbedarf, eingeschränkte Bildungswege"}}, {"title": "Erzieherin", "emoji": "🧑‍🏫", "info": "Sozialer Beruf mit hoher Verantwortung, aber vergleichsweise niedrigem Gehalt. Familie unterstützte die Ausbildung finanziell.", "dims": {"Ökonomisch": "Niedriges bis mittleres Einkommen trotz Ausbildung", "Bildung Eltern": "Mittlerer Bildungsabschluss", "Herkunft": "In Deutschland geboren", "Wohnsituation": "Mietwohnung, begrenztes Budget"}}, {"title": "Manager bei Daimler", "emoji": "💼", "info": "Studium an einer angesehenen Universität, Eltern konnten das Studium problemlos finanzieren. Gutes Gehalt, sicherer Aufstieg.", "dims": {"Ökonomisch": "Hohes Einkommen, finanziell sehr sicher", "Bildung Eltern": "Beide Elternteile akademisch gebildet", "Herkunft": "In Deutschland geboren, großstädtisches Milieu", "Wohnsituation": "Eigentum, gehobener Lebensstandard"}}, {"title": "Psychisch kranke, arbeitsunfähig geschriebene 40-jährige Friseurin", "emoji": "💇", "info": "Nach Burnout und Depression seit einem Jahr krankgeschrieben. Unsicher, ob und wann sie in ihren Beruf zurückkehren kann.", "dims": {"Ökonomisch": "Einkommenseinbußen durch Krankschreibung", "Bildung Eltern": "Berufsausbildung, keine akademische Familie", "Herkunft": "In Deutschland geboren", "Besonderheit": "Psychische Erkrankung, unsichere berufliche Zukunft"}}];
+
+function drawRole() {
+  const btn = document.getElementById('drawBtn');
+  const ring = document.getElementById('wheelRing');
+  const emojiEl = document.getElementById('wheelEmoji');
+  btn.disabled = true;
+
+  ring.classList.remove('spinning');
+  void ring.offsetWidth;
+  ring.classList.add('spinning');
+
+  let flickerCount = 0;
+  const flicker = setInterval(() => {
+    const r = roles[Math.floor(Math.random()*roles.length)];
+    emojiEl.textContent = r.emoji;
+    flickerCount++;
+    if (flickerCount > 14) clearInterval(flicker);
+  }, 90);
+
+  setTimeout(() => {
+    clearInterval(flicker);
+    const idx = Math.floor(Math.random() * roles.length);
+    const role = roles[idx];
+    emojiEl.textContent = role.emoji;
+
+    document.getElementById('roleEmoji').textContent = role.emoji;
+    document.getElementById('roleTitle').textContent = role.title;
+    document.getElementById('roleInfo').textContent = role.info;
+
+    const dimsGrid = document.getElementById('dimsGrid');
+    dimsGrid.innerHTML = '';
+    for (const [label, value] of Object.entries(role.dims)) {
+      const box = document.createElement('div');
+      box.className = 'dim-box';
+      box.innerHTML = '<div class="dim-label">' + label + '</div><div class="dim-value">' + value + '</div>';
+      dimsGrid.appendChild(box);
+    }
+
+    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('resultCard').scrollIntoView({behavior:'smooth', block:'center'});
+
+    btn.disabled = false;
+    btn.textContent = 'Nochmal auslosen';
+  }, 1450);
+}
+</script>
+
+</body>
+</html>
